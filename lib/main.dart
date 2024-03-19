@@ -59,12 +59,17 @@ class _HomePageState extends State<HomePage> {
             ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
-        onPressed: () {
+        onPressed: () async {
           // + 버튼 클릭시 버킷 생성 페이지로 이동
-          Navigator.push(
+          String? job = await Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => CreatePage()),
           );
+          if (job != null) {
+            setState(() {
+              bucketList.add(job);
+            });
+          }
         },
       ),
     );
@@ -135,6 +140,7 @@ class _CreatePageState extends State<CreatePage> {
                     setState(() {
                       error = null;
                     });
+                    Navigator.pop(context, job); // 추가 하기 버튼 클릭 시 현재 화면을 종료하는 코드
                   }
                 },
               ),
