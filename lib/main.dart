@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -17,6 +19,14 @@ class MyApp extends StatelessWidget {
   }
 }
 
+// 버킷 클래스
+class Bucket {
+  String job; // 할 일
+  bool isDone; //  완료 여부
+
+  Bucket(this.job, this.isDone); // 생성자
+}
+
 /// 홈 페이지
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -26,7 +36,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<String> bucketList = ['여행가기']; // 전체 버킷 리스트 목록
+  List<Bucket> bucketList = []; // 전체 버킷 리스트 목록
 
   @override
   Widget build(BuildContext context) {
@@ -39,21 +49,32 @@ class _HomePageState extends State<HomePage> {
           : ListView.builder(
               itemCount: bucketList.length,
               itemBuilder: (context, index) {
-                String bucket = bucketList[index];
+                Bucket bucket = bucketList[index];
                 return ListTile(
                   title: Text(
-                    bucket,
+                    bucket.job,
                     style: TextStyle(
                       fontSize: 24,
+                      color: bucket.isDone ? Colors.grey : Colors.black,
+                      decoration: bucket.isDone
+                          ? TextDecoration.lineThrough
+                          : TextDecoration.none,
                     ),
                   ),
+                  // 삭제 아이콘 버튼
                   trailing: IconButton(
                     onPressed: () {
-                      print('$bucket : 삭제하기');
+                      //삭제 버튼 클릭 시
+                      showDeleteDialog(context, index);
                     },
                     icon: Icon(CupertinoIcons.delete),
                   ),
-                  onTap: () => print('$bucket : 클릭 됨'),
+                  onTap: () {
+                    // 아이템 클릭 시
+                    setState(() {
+                      bucket.isDone = !bucket.isDone;
+                    });
+                  },
                 );
               },
             ),
@@ -67,11 +88,43 @@ class _HomePageState extends State<HomePage> {
           );
           if (job != null) {
             setState(() {
-              bucketList.add(job);
+              Bucket newBucket = Bucket(job, false);
+              bucketList.add(newBucket);
             });
           }
         },
       ),
+    );
+  }
+
+  void showDeleteDialog(BuildContext context, int index) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("정말로 삭제하시겠습니까?"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text("취소"),
+            ),
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  bucketList.removeAt(index);
+                });
+                Navigator.pop(context);
+              },
+              child: Text(
+                "확인",
+                style: TextStyle(color: Colors.pink),
+              ),
+            )
+          ],
+        );
+      },
     );
   }
 }
